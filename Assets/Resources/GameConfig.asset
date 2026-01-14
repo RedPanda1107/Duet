@@ -13,17 +13,19 @@ MonoBehaviour:
   m_Name: GameConfig
   m_EditorClassIdentifier: 
   playerStartPosition: {x: 0, y: -3.5, z: 0}
-  playerScale: 0.5
+  playerScale: 150
   dotDistance: 2
-  rotateSpeed: 180
-  torqueForce: 50
-  maxAngularVelocity: 360
-  angularDrag: 2
-  obstacleFallSpeed: 2
-  obstaclePoolInitialCount: 20
-  spawnInterval: 1.5
+  rotateSpeed: 360
+  torqueForce: 80
+  maxAngularVelocity: 420
+  angularDrag: 1.5
+  obstacleFallSpeed: 3
+  obstaclePoolInitialCount: 5
+  spawnInterval: 1.2
   spawnMargin: 1
-  spawnRangeX: 4
+  spawnRangeX: 2.5
   spawnHeight: 6
   transitionDuration: 1
-  transitionTargetScale: 80
+  transitionTargetScale: 110
+  menuPlayerPosition: {x: 0, y: 0, z: 0}
+  menuPlayerScale: 150

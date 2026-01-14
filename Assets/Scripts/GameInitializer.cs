@@ -11,12 +11,13 @@ public class GameInitializer : MonoBehaviour
     public GameObject dotPrefab;
     public GameObject playerPrefab; // optional: if set, instantiate this instead of creating pivot+dots
     public float dotRadius = 1f;
-    public float dotDistance = 2f;
     [Header("Player Transform")]
-    public Vector3 playerStartPosition = new Vector3(0f, -4f, 0f);
+    // playerStartPosition and dotDistance are sourced from GameConfig; do not set here.
+    private Duet.Config.GameConfig gameConfig;
 
     [Header("Obstacle Setup")]
-    public GameObject obstaclePrefab;
+    [Tooltip("Optional: assign ObstacleConfig assets here. If empty, configs will be loaded from Resources/Obstacles at runtime.")]
+    public ObstacleConfig[] obstacleConfigs;
 
     [Header("Spawner Setup")]
     public ObstacleSpawner spawner;
@@ -24,13 +25,7 @@ public class GameInitializer : MonoBehaviour
     private void Awake()
     {
         // Load game configuration if present (Assets/Create -> Duet/Game Config)
-        var cfg = Resources.Load<GameConfig>("GameConfig");
-        if (cfg != null)
-        {
-            // override inspector defaults with config
-            playerStartPosition = cfg.playerStartPosition;
-            dotDistance = cfg.dotDistance;
-        }
+        gameConfig = Resources.Load<GameConfig>("GameConfig");
 
         
     }
@@ -38,7 +33,7 @@ public class GameInitializer : MonoBehaviour
     private void Start()
     {
         // Single-scene mode: always initialize managers, show menu and keep spawner disabled until game starts
-        SetupMenuScene();
+            SetupMenuScene();
         if (spawner != null) spawner.enabled = false;
     }
 
@@ -67,12 +62,37 @@ public class GameInitializer : MonoBehaviour
     // Called by GameManager when starting gameplay
     public void OnStartGame()
     {
-        SetupObstaclePool();
+        // Determine config list: prefer inspector-assigned list, otherwise load from Resources/Obstacles
+        ObstacleConfig[] configsToRegister = null;
+        if (obstacleConfigs != null && obstacleConfigs.Length > 0)
+        {
+            configsToRegister = obstacleConfigs;
+        }
+        else
+        {
+            configsToRegister = Resources.LoadAll<ObstacleConfig>("Obstacles");
+        }
+
+        var cfgList = new System.Collections.Generic.List<ObstacleConfig>();
+        foreach (var cfg in configsToRegister)
+        {
+            string key = !string.IsNullOrEmpty(cfg.id) ? cfg.id : (cfg.prefab != null ? cfg.prefab.name : "Obstacle");
+            int initial = Resources.Load<GameConfig>("GameConfig")?.obstaclePoolInitialCount ?? 20;
+            PoolManager.Instance.RegisterPrefab(key, cfg.prefab, initial);
+            cfgList.Add(cfg);
+        }
+
+        // assign configs to spawner (assumes spawner is assigned in inspector)
+        spawner.obstacleConfigs = cfgList.ToArray();
+
         // Reset score and enable spawner (assumes spawner assigned in Inspector)
         ScoreManager.Instance?.ResetScore();
         spawner.enabled = true;
         // Reposition player (assumes PlayerPivot exists)
-        GameObject.Find("PlayerPivot").transform.position = playerStartPosition;
+        if (gameConfig != null)
+            GameObject.Find("PlayerPivot").transform.position = gameConfig.playerStartPosition;
+        else
+            GameObject.Find("PlayerPivot").transform.position = new Vector3(0f, -4f, 0f);
     }
 
     // Called by GameManager when game over occurs
@@ -88,12 +108,12 @@ public class GameInitializer : MonoBehaviour
         {
             GameObject instantiated = Instantiate(playerPrefab);
             instantiated.name = "PlayerPivot";
-            // Place prefab at configured start position and reset rotation
-            instantiated.transform.position = playerStartPosition;
+            // Place prefab at menu position and reset rotation
+            instantiated.transform.position = gameConfig != null ? gameConfig.menuPlayerPosition : new Vector3(0f, 0f, 0f);
             instantiated.transform.rotation = Quaternion.identity;
-            // Scale down instantiated player to configured scale
+            // Scale player to menu scale
             var cfg = Resources.Load<GameConfig>("GameConfig");
-            float scale = cfg != null ? cfg.playerScale : 0.5f;
+            float scale = cfg != null ? cfg.menuPlayerScale : 1.0f;
             instantiated.transform.localScale = Vector3.one * scale;
         }
     }
@@ -117,9 +137,8 @@ public class GameInitializer : MonoBehaviour
 
     private void SetupObstaclePool()
     {
-        var cfg = Resources.Load<GameConfig>("GameConfig");
-        int initial = cfg != null ? cfg.obstaclePoolInitialCount : 20;
-        PoolManager.Instance.RegisterPrefab("Obstacle", obstaclePrefab, initial);
+        // Deprecated: obstacle prefab registration via single prefab removed in favor of ObstacleConfig-based registration.
+        // Kept empty to avoid compile errors for any legacy calls.
     }
 
     private void SetupSpawner()

@@ -4,7 +4,7 @@ using Duet.Managers;
 namespace Duet.Player
 {
     /// <summary>
-    /// Simple component to rotate the player pivot clockwise while the game is in Playing state.
+    /// Simple component to rotate the player pivot clockwise while the game is in Menu state.
     /// Attach this to the PlayerPivot GameObject (or player prefab).
     /// </summary>
     public class PlayerAutoRotate : MonoBehaviour

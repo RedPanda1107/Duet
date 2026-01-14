@@ -1,12 +1,19 @@
 using UnityEngine;
 using Duet.Managers;
+using Duet.Config;
 
 namespace Duet.Player
 {
     public class PlayerController : MonoBehaviour
     {
-        [Header("Rotation Settings")]
-        public float rotateSpeed = 180f; // degrees per second
+        private float rotateSpeed;
+
+        private void Awake()
+        {
+            // Load configuration from GameConfig
+            var cfg = Resources.Load<GameConfig>("GameConfig");
+            rotateSpeed = cfg.rotateSpeed;
+        }
 
         void Update()
         {

@@ -6,9 +6,15 @@ namespace Duet.Config
     public class GameConfig : ScriptableObject
     {
         [Header("Player")]
-        public Vector3 playerStartPosition = new Vector3(0f, -4f, 0f);
-        public float playerScale = 0.5f;
+        public Vector3 playerStartPosition = new Vector3(0f, -3.5f, 0f);
+        public float playerScale = 150f;
         public float dotDistance = 2f;
+
+        [Header("Menu Player")]
+        [Tooltip("Player position when in menu state.")]
+        public Vector3 menuPlayerPosition = new Vector3(0f, 0f, 0f);
+        [Tooltip("Player scale when in menu state (actual localScale, e.g. 150 = 150x150).")]
+        public float menuPlayerScale = 150f;
         public float rotateSpeed = 180f;
         public float torqueForce = 50f;
         public float maxAngularVelocity = 360f;
@@ -26,7 +32,9 @@ namespace Duet.Config
         [Tooltip("Duration in seconds for the player start transition (move/rotate/scale).")]
         public float transitionDuration = 1f;
         [Tooltip("Target uniform localScale applied to the player at the end of the transition.")]
-        public float transitionTargetScale = 80f;
+        public float transitionTargetScale = 110f;
+        [Tooltip("Player rotation angle (Z-axis) when returning to menu.")]
+        public float menuReturnRotation = 180f;
     }
 }
 

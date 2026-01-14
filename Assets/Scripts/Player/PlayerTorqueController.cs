@@ -1,5 +1,6 @@
 using UnityEngine;
 using Duet.Managers;
+using Duet.Config;
 
 namespace Duet.Player
 {
@@ -9,15 +10,20 @@ namespace Duet.Player
     /// </summary>
     public class PlayerTorqueController : MonoBehaviour
     {
-        [Header("Torque Settings")]
-        public float torqueForce = 50f;
-        public float maxAngularVelocity = 360f;
-        public float angularDrag = 2f;
+        private float torqueForce;
+        private float maxAngularVelocity;
+        private float angularDrag;
 
         private Rigidbody2D rb;
 
         private void Awake()
         {
+            // Load configuration from GameConfig
+            var cfg = Resources.Load<GameConfig>("GameConfig");
+            torqueForce = cfg.torqueForce;
+            maxAngularVelocity = cfg.maxAngularVelocity;
+            angularDrag = cfg.angularDrag;
+
             rb = GetComponent<Rigidbody2D>();
             if (rb == null)
             {

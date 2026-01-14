@@ -23,6 +23,7 @@ namespace Duet.Managers
         public Button pauseButton;
         public Button continueButton;
         public TextMeshProUGUI scoreText;
+        public TextMeshProUGUI recordText;
 
         // score is managed by ScoreManager
 
@@ -36,6 +37,7 @@ namespace Duet.Managers
             else
             {
                 Destroy(gameObject);
+                return;
             }
         }
 
@@ -43,6 +45,7 @@ namespace Duet.Managers
         {
             SetupButtonListeners();
             UpdateScoreDisplay();
+            UpdateRecordDisplay();
         }
 
         private void SetupButtonListeners()
@@ -148,18 +151,29 @@ namespace Duet.Managers
         private void OnEnable()
         {
             if (ScoreManager.Instance != null)
+            {
                 ScoreManager.Instance.OnScoreChanged += OnScoreChanged;
+                ScoreManager.Instance.OnHighScoreChanged += OnHighScoreChanged;
+            }
         }
 
         private void OnDisable()
         {
             if (ScoreManager.Instance != null)
+            {
                 ScoreManager.Instance.OnScoreChanged -= OnScoreChanged;
+                ScoreManager.Instance.OnHighScoreChanged -= OnHighScoreChanged;
+            }
         }
 
         private void OnScoreChanged(int newScore)
         {
             UpdateScoreDisplay();
+        }
+
+        private void OnHighScoreChanged(int newHighScore)
+        {
+            UpdateRecordDisplay();
         }
 
         private void UpdateScoreDisplay()
@@ -168,6 +182,15 @@ namespace Duet.Managers
             {
                 int s = ScoreManager.Instance != null ? ScoreManager.Instance.GetScore() : 0;
                 scoreText.text = $"Score: {s}";
+            }
+        }
+
+        private void UpdateRecordDisplay()
+        {
+            if (recordText != null)
+            {
+                int h = ScoreManager.Instance != null ? ScoreManager.Instance.GetHighScore() : 0;
+                recordText.text = $"Record: {h}";
             }
         }
         
