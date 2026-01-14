@@ -139,7 +139,7 @@ namespace Duet.Obstacles
                 {
                     chosenName = !string.IsNullOrEmpty(chosenCfg.id) ? chosenCfg.id : (chosenCfg.prefab != null ? chosenCfg.prefab.name : "(no-prefab)");
                 }
-                Debug.Log($"[Spawner] chosenCfg={chosenName}, key={key}, regionIndex={regionIndex}, x={x:F2}");
+                // Debug.Log($"[Spawner] chosenCfg={chosenName}, key={key}, regionIndex={regionIndex}, x={x:F2}"); // Commented out to reduce log spam
 
                 GameObject obstacle = PoolManager.Instance.GetFromPool(key);
                 if (obstacle == null)
@@ -149,7 +149,7 @@ namespace Duet.Obstacles
                     {
                         obstacle = Instantiate(chosenCfg.prefab, _obstacleContainer);
                         obstacle.name = key;
-                        Debug.Log($"[Spawner] Instantiated prefab '{chosenCfg.prefab.name}' for key '{key}'");
+                        // Debug.Log($"[Spawner] Instantiated prefab '{chosenCfg.prefab.name}' for key '{key}'"); // Commented out to reduce log spam
                     }
                 }
                 if (obstacle == null)
@@ -186,27 +186,9 @@ namespace Duet.Obstacles
                         bx.size = chosenCfg.overrideColliderSize;
                     }
                 }
-                // DEBUG_LOG: detailed instance diagnostics (safe to remove later)
+                // DEBUG_LOG: detailed instance diagnostics (removed for performance)
                 // These logs help verify where the instance is placed vs. where its sprite/children are.
-                // Remove or comment out when no longer needed.
-                string cfgName = "(none)";
-                if (chosenCfg != null)
-                {
-                    if (!string.IsNullOrEmpty(chosenCfg.id)) cfgName = chosenCfg.id;
-                    else if (chosenCfg.prefab != null) cfgName = chosenCfg.prefab.name;
-                }
-                Debug.Log($"[Spawner DEBUG] spawned '{obstacle.name}' cfg={cfgName}, region={regionIndex} worldX={obstacle.transform.position.x:F2} worldY={obstacle.transform.position.y:F2}");
-                if (sr != null)
-                {
-                    Debug.Log($"[Spawner DEBUG] Sprite bounds center: {sr.bounds.center} spritePivotApproxLocal={sr.sprite.pivot}");
-                }
-                // log local positions of children to detect prefab internal offsets
-                for (int ci = 0; ci < obstacle.transform.childCount; ci++)
-                {
-                    var child = obstacle.transform.GetChild(ci);
-                    Debug.Log($"[Spawner DEBUG] child '{child.name}' localPos={child.localPosition}");
-                }
-                Debug.Log($"[Spawner DEBUG] instance.localPosition={obstacle.transform.localPosition} instance.localScale={obstacle.transform.localScale}");
+                // Commented out to reduce log spam during gameplay.
 
                 // Ensure obstacle tag and BoxCollider2D exist and are configured
                 if (obstacle.tag != "Obstacle")
@@ -223,16 +205,25 @@ namespace Duet.Obstacles
                     obsComp.alignment = (Obstacle.Alignment)regionIndex;
                     obsComp.poolKey = key;
                     obsComp.ApplyConfig(chosenCfg);
-                    // Log cfg assignment to instance
-                    string cfgId = chosenCfg != null ? (chosenCfg.id ?? (chosenCfg.prefab != null ? chosenCfg.prefab.name : "no-prefab")) : "none";
-                    Debug.Log($"[Spawner CFG ASSIGN] '{obstacle.name}' assigned cfg='{cfgId}' poolKey='{key}' region={regionIndex}");
+                    // CFG assignment logging removed for performance
                 }
 
-                // Ensure Rigidbody2D is configured (Obstacle script handles the constraints)
+                // Ensure Rigidbody2D is configured
                 var rb = obstacle.GetComponent<Rigidbody2D>();
                 rb.gravityScale = 0f;
                 rb.bodyType = RigidbodyType2D.Dynamic;
-                rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+                // Set rotation constraints based on config
+                if (chosenCfg != null && chosenCfg.centerRotate)
+                {
+                    // Allow rotation for rotating obstacles (only freeze X position to allow falling)
+                    rb.constraints = RigidbodyConstraints2D.FreezePositionX;
+                }
+                else
+                {
+                    // Freeze rotation for non-rotating obstacles
+                    rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+                }
             }
         }
     }

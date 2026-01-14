@@ -20,6 +20,7 @@ namespace Duet.Obstacles
             if (config == null) return;
             if (!config.centerRotate) return;
             if (UnityEngine.Object.FindFirstObjectByType<Duet.Managers.GameManager>()?.CurrentState != Duet.Managers.GameState.Playing) return;
+
             Debug.Log($"[Rotation] '{gameObject.name}' centerRotate={config.centerRotate} rotationSpeed={config.rotationSpeed}");
             float delta = -rotationSign * config.rotationSpeed * Time.deltaTime;
             transform.Rotate(0f, 0f, delta);

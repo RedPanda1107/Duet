@@ -23,6 +23,7 @@ namespace Duet.Obstacles
 
         private ObstacleMovement movementComp;
         private ObstacleRotation rotationComp;
+        private bool isRecycled = false; // Prevent multiple recycling
 
         private void Awake()
         {
@@ -56,10 +57,17 @@ namespace Duet.Obstacles
         private void OnBecameInvisible()
         {
             // Return to pool when off screen (only if game is playing to avoid menu/preview recycling)
-            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing && !isRecycled)
             {
+                isRecycled = true;
                 PoolManager.Instance.ReturnToPool(poolKey, gameObject);
             }
+        }
+
+        // Reset recycled flag when object is reused from pool
+        private void OnEnable()
+        {
+            isRecycled = false;
         }
     }
 }
